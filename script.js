@@ -36,6 +36,7 @@ const COLOR_NAMES = [
 let currentTheme = 'garden';
 let currentGroup = 'default';
 let todayColor = null;
+let selectedGroupTheme = 'garden';
 
 function getTodayColor() {
   const today = new Date();
@@ -153,12 +154,12 @@ function initTodayColor() {
   const colorDisplay = document.getElementById('colorDisplay');
   const colorName = document.getElementById('colorName');
   const colorHex = document.getElementById('colorHex');
-  const colorDate = document.getElementById('colorDate');
+  const colorDot = document.getElementById('colorDot');
   
-  colorDisplay.style.background = `radial-gradient(circle at 30% 30%, ${todayColor.hex}, ${adjustColor(todayColor.hex, -30)})`;
+  colorDisplay.style.background = `radial-gradient(circle at 30% 30%, ${todayColor.hex}, ${adjustColor(todayColor.hex, -40)})`;
+  colorDot.style.background = todayColor.hex;
   colorName.textContent = todayColor.name;
   colorHex.textContent = todayColor.hex;
-  colorDate.textContent = formatDate(new Date());
   
   document.documentElement.style.setProperty('--theme-primary', todayColor.hex);
   document.documentElement.style.setProperty('--theme-secondary', adjustColor(todayColor.hex, 30));
@@ -239,6 +240,7 @@ function savePhoto(base64) {
   
   showToast('打卡成功！');
   updateStats();
+  updateWeekTrail();
   updateGallery();
 }
 
@@ -274,6 +276,49 @@ function updateStats() {
   
   const groups = loadData('groups', {});
   document.getElementById('groupCount').textContent = Object.keys(groups).length + 1;
+}
+
+function updateWeekTrail() {
+  const photos = loadData('photos', {});
+  const weekDots = document.getElementById('weekDots');
+  
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  
+  const startOfYear = new Date(today.getFullYear(), 0, 1);
+  const daysSinceStart = Math.floor((today - startOfYear) / (1000 * 60 * 60 * 24));
+  const currentWeek = Math.ceil((daysSinceStart + 1) / 7);
+  document.getElementById('weekNumber').textContent = currentWeek;
+  
+  let html = '';
+  
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    const dayOfWeek = date.getDay();
+    const isToday = i === 0;
+    
+    let hasPhoto = false;
+    Object.values(photos).forEach(groupPhotos => {
+      if (groupPhotos.some(p => p.date === dateStr)) {
+        hasPhoto = true;
+      }
+    });
+    
+    const dayNumber = date.getDate();
+    const classes = ['week-dot', `day-${dayOfWeek}`];
+    if (hasPhoto) classes.push('filled');
+    if (isToday) classes.push('today');
+    
+    html += `
+      <div class="${classes.join(' ')}">
+        ${hasPhoto ? `<span class="week-number">${dayNumber}</span>` : ''}
+      </div>
+    `;
+  }
+  
+  weekDots.innerHTML = html;
 }
 
 function updateGallery() {
@@ -326,6 +371,8 @@ function initGroups() {
   createGroupBtn.addEventListener('click', () => {
     modal.classList.add('show');
     groupNameInput.value = '';
+    selectedGroupTheme = currentTheme;
+    selectGroupTheme(currentTheme);
   });
   
   cancelBtn.addEventListener('click', () => {
@@ -335,7 +382,7 @@ function initGroups() {
   confirmBtn.addEventListener('click', () => {
     const name = groupNameInput.value.trim();
     if (!name) {
-      showToast('请输入小组名称');
+      showToast('请输入空间名称');
       return;
     }
     
@@ -346,6 +393,13 @@ function initGroups() {
   updateGroupList();
 }
 
+function selectGroupTheme(theme) {
+  selectedGroupTheme = theme;
+  
+  document.getElementById('gardenOption').classList.toggle('active', theme === 'garden');
+  document.getElementById('galaxyOption').classList.toggle('active', theme === 'galaxy');
+}
+
 function createGroup(name) {
   const groups = loadData('groups', {});
   const groupId = 'group_' + Date.now();
@@ -353,11 +407,12 @@ function createGroup(name) {
   groups[groupId] = {
     id: groupId,
     name: name,
+    theme: selectedGroupTheme,
     createdAt: new Date().toISOString()
   };
   
   saveData('groups', groups);
-  showToast('小组创建成功！');
+  showToast('空间创建成功！');
   updateGroupList();
 }
 
@@ -368,10 +423,8 @@ function updateGroupList() {
   
   let html = `
     <div class="group-item ${currentGroup === 'default' ? 'active' : ''}" onclick="selectGroup('default')">
-      <div>
-        <div class="group-name">我的个人空间</div>
-        <div class="group-count">${photos['default'] ? photos['default'].length : 0} 张照片</div>
-      </div>
+      <div class="group-name">我的个人空间</div>
+      <div class="group-count">${photos['default'] ? photos['default'].length : 0} 张</div>
     </div>
   `;
   
@@ -379,10 +432,8 @@ function updateGroupList() {
     const count = photos[group.id] ? photos[group.id].length : 0;
     html += `
       <div class="group-item ${currentGroup === group.id ? 'active' : ''}" onclick="selectGroup('${group.id}')">
-        <div>
-          <div class="group-name">${group.name}</div>
-          <div class="group-count">${count} 张照片</div>
-        </div>
+        <div class="group-name">${group.name}</div>
+        <div class="group-count">${count} 张</div>
       </div>
     `;
   });
@@ -402,6 +453,7 @@ function init() {
   initUpload();
   initGroups();
   updateStats();
+  updateWeekTrail();
   updateGallery();
   
   const groups = loadData('groups', {});
