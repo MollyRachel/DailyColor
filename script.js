@@ -286,9 +286,9 @@ function updateWeekTrail() {
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
   
-  const startOfYear = new Date(today.getFullYear(), 0, 1);
-  const daysSinceStart = Math.floor((today - startOfYear) / (1000 * 60 * 60 * 24));
-  const currentWeek = Math.ceil((daysSinceStart + 1) / 7);
+  const startDate = new Date(2026, 5, 1);
+  const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+  const currentWeek = Math.max(1, Math.floor(daysSinceStart / 7) + 1);
   document.getElementById('weekNumber').textContent = currentWeek;
   
   let html = '';
@@ -507,7 +507,7 @@ function openShareModal() {
   
   let shareUrl = window.location.origin + window.location.pathname;
   if (currentGroup !== 'default' && activeGroup) {
-    shareUrl += '?group=' + activeGroup.id;
+    shareUrl += '?group=' + activeGroup.id + '&groupName=' + encodeURIComponent(activeGroup.name);
   }
   
   document.getElementById('shareLink').value = shareUrl;
@@ -529,15 +529,51 @@ function copyShareLink() {
 function joinGroupViaLink() {
   const urlParams = new URLSearchParams(window.location.search);
   const groupId = urlParams.get('group');
+  const groupName = urlParams.get('groupName');
   
   if (groupId && groupId !== currentGroup) {
     const groups = loadData('groups', {});
-    if (groups[groupId]) {
+    
+    if (!groups[groupId] && groupName) {
+      document.getElementById('joinGroupModalTitle').textContent = '是否加入「' + decodeURIComponent(groupName) + '」空间？';
+      document.getElementById('joinGroupModal').classList.add('show');
+      
+      window.pendingGroupId = groupId;
+      window.pendingGroupName = groupName;
+    } else if (groups[groupId]) {
       selectGroup(groupId);
       showToast('已加入该空间！');
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }
+}
+
+function acceptJoinGroup() {
+  if (window.pendingGroupId && window.pendingGroupName) {
+    const groups = loadData('groups', {});
+    groups[window.pendingGroupId] = {
+      id: window.pendingGroupId,
+      name: decodeURIComponent(window.pendingGroupName),
+      theme: 'garden',
+      createdAt: new Date().toISOString()
+    };
+    saveData('groups', groups);
+    
+    selectGroup(window.pendingGroupId);
+    document.getElementById('joinGroupModal').classList.remove('show');
+    showToast('成功加入空间！');
+    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    window.pendingGroupId = null;
+    window.pendingGroupName = null;
+  }
+}
+
+function rejectJoinGroup() {
+  document.getElementById('joinGroupModal').classList.remove('show');
+  window.pendingGroupId = null;
+  window.pendingGroupName = null;
+  window.history.replaceState({}, document.title, window.location.pathname);
 }
 
 function updateCommunityGroupList() {
