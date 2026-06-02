@@ -1,0 +1,387 @@
+const COLOR_NAMES = [
+  { hex: '#FF6B6B', name: '珊瑚红' },
+  { hex: '#4ECDC4', name: '薄荷绿' },
+  { hex: '#45B7D1', name: '天空蓝' },
+  { hex: '#96CEB4', name: '苔绿' },
+  { hex: '#FFEAA7', name: '柠檬黄' },
+  { hex: '#DDA0DD', name: '梅红' },
+  { hex: '#98D8C8', name: '青绿' },
+  { hex: '#F7DC6F', name: '金黄' },
+  { hex: '#BB8FCE', name: '紫罗兰' },
+  { hex: '#85C1E9', name: '浅蓝' },
+  { hex: '#F8B500', name: '琥珀' },
+  { hex: '#FF69B4', name: '粉红' },
+  { hex: '#00CED1', name: '青色' },
+  { hex: '#FFD700', name: '金色' },
+  { hex: '#FF7F50', name: '珊瑚橙' },
+  { hex: '#20B2AA', name: '浅海绿' },
+  { hex: '#BA55D3', name: '紫水晶' },
+  { hex: '#FFB6C1', name: '浅粉' },
+  { hex: '#00FA9A', name: '春绿' },
+  { hex: '#FFDAB9', name: '桃色' },
+  { hex: '#9370DB', name: '梅紫' },
+  { hex: '#87CEEB', name: '天蓝' },
+  { hex: '#F0E68C', name: '小麦色' },
+  { hex: '#CD853F', name: '秘鲁棕' },
+  { hex: '#FFE4E1', name: '雪粉' },
+  { hex: '#E6E6FA', name: '薰衣草' },
+  { hex: '#AFEEEE', name: '苍白绿' },
+  { hex: '#FFFACD', name: '柠檬奶油' },
+  { hex: '#DDA0DD', name: '梅红' },
+  { hex: '#F0FFF0', name: '蜂蜜' },
+  { hex: '#FFEFD5', name: '番木瓜' },
+  { hex: '#FFD39B', name: '杏色' },
+];
+
+let currentTheme = 'garden';
+let currentGroup = 'default';
+let todayColor = null;
+
+function getTodayColor() {
+  const today = new Date();
+  const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+  const index = dayOfYear % COLOR_NAMES.length;
+  return COLOR_NAMES[index];
+}
+
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+  const weekday = weekdays[date.getDay()];
+  return `${year}年${month}月${day}日 ${weekday}`;
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+function saveData(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+function loadData(key, defaultValue = null) {
+  const saved = localStorage.getItem(key);
+  return saved ? JSON.parse(saved) : defaultValue;
+}
+
+function initTheme() {
+  const savedTheme = loadData('colorTheme', 'garden');
+  setTheme(savedTheme);
+  
+  document.getElementById('gardenTheme').addEventListener('click', () => setTheme('garden'));
+  document.getElementById('galaxyTheme').addEventListener('click', () => setTheme('galaxy'));
+}
+
+function setTheme(theme) {
+  currentTheme = theme;
+  document.body.className = theme;
+  
+  document.getElementById('gardenTheme').classList.toggle('active', theme === 'garden');
+  document.getElementById('galaxyTheme').classList.toggle('active', theme === 'galaxy');
+  
+  saveData('colorTheme', theme);
+  updateDecorations();
+}
+
+function updateDecorations() {
+  document.querySelectorAll('.star, .flower').forEach(el => el.remove());
+  
+  if (currentTheme === 'galaxy') {
+    for (let i = 0; i < 50; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDelay = Math.random() * 2 + 's';
+      star.style.width = (Math.random() * 2 + 1) + 'px';
+      star.style.height = star.style.width;
+      document.body.appendChild(star);
+    }
+  } else {
+    const flowers = ['🌸', '🌺', '🌻', '🌼', '🌷', '💐'];
+    for (let i = 0; i < 15; i++) {
+      const flower = document.createElement('div');
+      flower.className = 'flower';
+      flower.textContent = flowers[Math.floor(Math.random() * flowers.length)];
+      flower.style.left = Math.random() * 100 + '%';
+      flower.style.top = Math.random() * 100 + '%';
+      flower.style.animationDelay = Math.random() * 3 + 's';
+      flower.style.fontSize = (Math.random() * 20 + 16) + 'px';
+      flower.style.opacity = 0.6;
+      document.body.appendChild(flower);
+    }
+  }
+}
+
+function initTodayColor() {
+  todayColor = getTodayColor();
+  
+  const colorDisplay = document.getElementById('colorDisplay');
+  const colorName = document.getElementById('colorName');
+  const colorHex = document.getElementById('colorHex');
+  const colorDate = document.getElementById('colorDate');
+  
+  colorDisplay.style.background = `radial-gradient(circle at 30% 30%, ${todayColor.hex}, ${adjustColor(todayColor.hex, -30)})`;
+  colorName.textContent = todayColor.name;
+  colorHex.textContent = todayColor.hex;
+  colorDate.textContent = formatDate(new Date());
+  
+  document.documentElement.style.setProperty('--theme-primary', todayColor.hex);
+  document.documentElement.style.setProperty('--theme-secondary', adjustColor(todayColor.hex, 30));
+}
+
+function adjustColor(hex, amount) {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+  const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+  const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+  return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+}
+
+function initUpload() {
+  const photoInput = document.getElementById('photoInput');
+  const uploadArea = document.getElementById('uploadArea');
+  
+  photoInput.addEventListener('change', handlePhotoUpload);
+  
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = todayColor.hex;
+  });
+  
+  uploadArea.addEventListener('dragleave', () => {
+    uploadArea.style.borderColor = '';
+  });
+  
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '';
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFile(files[0]);
+    }
+  });
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (file) {
+    handleFile(file);
+  }
+}
+
+function handleFile(file) {
+  if (!file.type.startsWith('image/')) {
+    showToast('请选择图片文件');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    savePhoto(e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function savePhoto(base64) {
+  const today = new Date().toISOString().split('T')[0];
+  const photos = loadData('photos', {});
+  
+  if (!photos[currentGroup]) {
+    photos[currentGroup] = [];
+  }
+  
+  const photo = {
+    id: Date.now(),
+    date: today,
+    color: todayColor.hex,
+    colorName: todayColor.name,
+    data: base64,
+    group: currentGroup
+  };
+  
+  photos[currentGroup].unshift(photo);
+  saveData('photos', photos);
+  
+  showToast('打卡成功！');
+  updateStats();
+  updateGallery();
+}
+
+function updateStats() {
+  const photos = loadData('photos', {});
+  let totalDays = 0;
+  const dates = new Set();
+  
+  Object.values(photos).forEach(groupPhotos => {
+    groupPhotos.forEach(photo => {
+      dates.add(photo.date);
+    });
+  });
+  
+  totalDays = dates.size;
+  
+  const today = new Date().toISOString().split('T')[0];
+  let streak = 0;
+  let checkDate = new Date();
+  
+  while (true) {
+    const dateStr = checkDate.toISOString().split('T')[0];
+    if (dates.has(dateStr)) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  
+  document.getElementById('totalDays').textContent = totalDays;
+  document.getElementById('currentStreak').textContent = streak;
+  
+  const groups = loadData('groups', {});
+  document.getElementById('groupCount').textContent = Object.keys(groups).length + 1;
+}
+
+function updateGallery() {
+  const photos = loadData('photos', {});
+  const galleryGrid = document.getElementById('galleryGrid');
+  
+  const groupPhotos = photos[currentGroup] || [];
+  
+  if (groupPhotos.length === 0) {
+    galleryGrid.innerHTML = '<div class="no-photos">还没有打卡记录<br>快去上传今天的照片吧！</div>';
+    return;
+  }
+  
+  galleryGrid.innerHTML = groupPhotos.map(photo => `
+    <div class="gallery-item" onclick="previewPhoto(${photo.id})">
+      <img src="${photo.data}" alt="${photo.colorName}">
+    </div>
+  `).join('');
+}
+
+function previewPhoto(id) {
+  const photos = loadData('photos', {});
+  let found = null;
+  
+  Object.values(photos).forEach(groupPhotos => {
+    const photo = groupPhotos.find(p => p.id === id);
+    if (photo) found = photo;
+  });
+  
+  if (found) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay show';
+    modal.innerHTML = `
+      <div class="modal-content" style="max-width: 90vw; max-height: 90vh; padding: 0;">
+        <img src="${found.data}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 20px;">
+        <button class="modal-btn cancel" style="position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);" onclick="this.parentElement.parentElement.remove()">关闭</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+}
+
+function initGroups() {
+  const createGroupBtn = document.getElementById('createGroupBtn');
+  const modal = document.getElementById('createGroupModal');
+  const cancelBtn = document.getElementById('cancelGroupBtn');
+  const confirmBtn = document.getElementById('confirmGroupBtn');
+  const groupNameInput = document.getElementById('groupNameInput');
+  
+  createGroupBtn.addEventListener('click', () => {
+    modal.classList.add('show');
+    groupNameInput.value = '';
+  });
+  
+  cancelBtn.addEventListener('click', () => {
+    modal.classList.remove('show');
+  });
+  
+  confirmBtn.addEventListener('click', () => {
+    const name = groupNameInput.value.trim();
+    if (!name) {
+      showToast('请输入小组名称');
+      return;
+    }
+    
+    createGroup(name);
+    modal.classList.remove('show');
+  });
+  
+  updateGroupList();
+}
+
+function createGroup(name) {
+  const groups = loadData('groups', {});
+  const groupId = 'group_' + Date.now();
+  
+  groups[groupId] = {
+    id: groupId,
+    name: name,
+    createdAt: new Date().toISOString()
+  };
+  
+  saveData('groups', groups);
+  showToast('小组创建成功！');
+  updateGroupList();
+}
+
+function updateGroupList() {
+  const groups = loadData('groups', {});
+  const groupList = document.getElementById('groupList');
+  const photos = loadData('photos', {});
+  
+  let html = `
+    <div class="group-item ${currentGroup === 'default' ? 'active' : ''}" onclick="selectGroup('default')">
+      <div>
+        <div class="group-name">我的个人空间</div>
+        <div class="group-count">${photos['default'] ? photos['default'].length : 0} 张照片</div>
+      </div>
+    </div>
+  `;
+  
+  Object.values(groups).forEach(group => {
+    const count = photos[group.id] ? photos[group.id].length : 0;
+    html += `
+      <div class="group-item ${currentGroup === group.id ? 'active' : ''}" onclick="selectGroup('${group.id}')">
+        <div>
+          <div class="group-name">${group.name}</div>
+          <div class="group-count">${count} 张照片</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  groupList.innerHTML = html;
+}
+
+function selectGroup(groupId) {
+  currentGroup = groupId;
+  updateGroupList();
+  updateGallery();
+}
+
+function init() {
+  initTheme();
+  initTodayColor();
+  initUpload();
+  initGroups();
+  updateStats();
+  updateGallery();
+  
+  const groups = loadData('groups', {});
+  const photos = loadData('photos', {});
+  
+  if (!photos['default']) {
+    photos['default'] = [];
+    saveData('photos', photos);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);

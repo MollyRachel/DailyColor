@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>每日色彩打卡</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --theme-primary: #FF6B9D;
+      --theme-secondary: #C084FC;
+      --bg-gradient-start: #fdf2f8;
+      --bg-gradient-end: #fae8ff;
+      --card-bg: rgba(255, 255, 255, 0.8);
+      --text-color: #1f2937;
+      --subtext-color: #6b7280;
+      --border-color: #e5e7eb;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Noto Sans SC', system-ui, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      min-height: 100vh;
+      transition: all 0.5s ease;
+    }
+
+    .galaxy {
+      --bg-gradient-start: #0f0c29;
+      --bg-gradient-end: #302b63;
+      --card-bg: rgba(255, 255, 255, 0.1);
+      --text-color: #ffffff;
+      --subtext-color: #a5b4fc;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .garden {
+      --bg-gradient-start: #f0fdf4;
+      --bg-gradient-end: #fef3c7;
+      --card-bg: rgba(255, 255, 255, 0.8);
+      --text-color: #1f2937;
+      --subtext-color: #6b7280;
+      --border-color: #e5e7eb;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .navbar h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .theme-switch {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .theme-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 20px;
+      background: transparent;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .theme-btn.active {
+      background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+      color: white;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .color-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .color-display {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .color-display:hover {
+      transform: scale(1.05);
+    }
+
+    .color-info {
+      margin-bottom: 1rem;
+    }
+
+    .color-name {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .color-hex {
+      font-size: 1.2rem;
+      font-family: monospace;
+      color: var(--subtext-color);
+      background: rgba(0, 0, 0, 0.05);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      display: inline-block;
+    }
+
+    .color-date {
+      font-size: 0.9rem;
+      color: var(--subtext-color);
+      margin-top: 1rem;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--theme-primary);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--subtext-color);
+      margin-top: 0.2rem;
+    }
+
+    .action-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+
+    .action-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--border-color);
+      border-radius: 16px;
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-area:hover {
+      border-color: var(--theme-primary);
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .upload-text {
+      font-size: 1rem;
+      color: var(--text-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-hint {
+      font-size: 0.8rem;
+      color: var(--subtext-color);
+    }
+
+    #photoInput {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .gallery-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+
+    .gallery-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .gallery-item {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .gallery-item:hover {
+      transform: scale(1.05);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .group-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .group-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .group-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+
+    .group-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .group-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .group-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .group-item:hover {
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    .group-item.active {
+      border: 2px solid var(--theme-primary);
+    }
+
+    .group-name {
+      font-weight: 500;
+      color: var(--text-color);
+    }
+
+    .group-count {
+      font-size: 0.8rem;
+      color: var(--subtext-color);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      background: rgba(0, 0, 0, 0.03);
+      color: var(--text-color);
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: var(--theme-primary);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .modal-btn.cancel {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--text-color);
+    }
+
+    .modal-btn.confirm {
+      background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+      color: white;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 200;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .no-photos {
+      text-align: center;
+      padding: 2rem;
+      color: var(--subtext-color);
+    }
+
+    .star {
+      position: fixed;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 2s infinite;
+      pointer-events: none;
+    }
+
+    .flower {
+      position: fixed;
+      font-size: 1.5rem;
+      animation: float 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+  </style>
+</head>
+<body class="garden">
+  <div class="navbar">
+    <h1>🎨 每日色彩</h1>
+    <div class="theme-switch">
+      <button class="theme-btn active" id="gardenTheme">🌸 花园</button>
+      <button class="theme-btn" id="galaxyTheme">🌌 星系</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="color-card">
+      <div class="color-display" id="colorDisplay"></div>
+      <div class="color-info">
+        <div class="color-name" id="colorName">薄荷绿</div>
+        <div class="color-hex" id="colorHex">#90EE90</div>
+        <div class="color-date" id="colorDate">2024年1月1日 星期一</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-number" id="totalDays">0</div>
+          <div class="stat-label">累计打卡</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="currentStreak">0</div>
+          <div class="stat-label">连续打卡</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="groupCount">0</div>
+          <div class="stat-label">我的小组</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-title">📸 今日打卡</div>
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">点击或拖拽上传照片</div>
+        <div class="upload-hint">支持 JPG、PNG 格式</div>
+        <input type="file" id="photoInput" accept="image/*" capture="environment">
+      </div>
+    </div>
+
+    <div class="group-card">
+      <div class="group-header">
+        <div class="group-title">👥 我的小组</div>
+        <button class="group-btn" id="createGroupBtn">+ 创建小组</button>
+      </div>
+      <div class="group-list" id="groupList">
+        <div class="group-item active">
+          <div>
+            <div class="group-name">我的个人空间</div>
+            <div class="group-count">0 张照片</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gallery-card">
+      <div class="gallery-title">📚 打卡记录</div>
+      <div class="gallery-grid" id="galleryGrid">
+        <div class="no-photos">还没有打卡记录<br>快去上传今天的照片吧！</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="createGroupModal">
+    <div class="modal-content">
+      <div class="modal-title">创建新小组</div>
+      <input type="text" class="modal-input" id="groupNameInput" placeholder="输入小组名称">
+      <div class="modal-actions">
+        <button class="modal-btn cancel" id="cancelGroupBtn">取消</button>
+        <button class="modal-btn confirm" id="confirmGroupBtn">创建</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
