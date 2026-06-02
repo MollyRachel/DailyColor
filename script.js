@@ -37,6 +37,7 @@ let currentTheme = 'garden';
 let currentGroup = 'default';
 let todayColor = null;
 let selectedGroupTheme = 'garden';
+let currentUser = loadData('currentUser', { id: 'user_' + Date.now(), name: '我' });
 
 function getTodayColor() {
   const today = new Date();
@@ -447,6 +448,204 @@ function selectGroup(groupId) {
   updateGallery();
 }
 
+function switchTab(tab) {
+  const homePage = document.getElementById('homePage');
+  const communityPage = document.getElementById('communityPage');
+  const homeTab = document.getElementById('homeTab');
+  const communityTab = document.getElementById('communityTab');
+  
+  if (tab === 'home') {
+    homePage.style.display = 'block';
+    communityPage.style.display = 'none';
+    homeTab.classList.add('active');
+    communityTab.classList.remove('active');
+  } else if (tab === 'community') {
+    homePage.style.display = 'none';
+    communityPage.style.display = 'block';
+    homeTab.classList.remove('active');
+    communityTab.classList.add('active');
+    updateCommunityFeed();
+    updateCommunityGroupList();
+  }
+}
+
+function openCameraModal() {
+  document.getElementById('cameraModal').classList.add('show');
+}
+
+function closeCameraModal() {
+  document.getElementById('cameraModal').classList.remove('show');
+}
+
+function takePhoto(source) {
+  closeCameraModal();
+  
+  if (source === 'camera') {
+    document.getElementById('cameraInput').click();
+  } else {
+    document.getElementById('galleryInput').click();
+  }
+}
+
+function handleCameraUpload(e) {
+  const file = e.target.files[0];
+  if (file) {
+    handleFile(file);
+  }
+}
+
+function handleGalleryUpload(e) {
+  const file = e.target.files[0];
+  if (file) {
+    handleFile(file);
+  }
+}
+
+function openShareModal() {
+  const groups = loadData('groups', {});
+  const activeGroup = Object.values(groups).find(g => g.id === currentGroup);
+  
+  let shareUrl = window.location.origin + window.location.pathname;
+  if (currentGroup !== 'default' && activeGroup) {
+    shareUrl += '?group=' + activeGroup.id;
+  }
+  
+  document.getElementById('shareLink').value = shareUrl;
+  document.getElementById('shareModal').classList.add('show');
+}
+
+function closeShareModal() {
+  document.getElementById('shareModal').classList.remove('show');
+}
+
+function copyShareLink() {
+  const linkInput = document.getElementById('shareLink');
+  linkInput.select();
+  document.execCommand('copy');
+  showToast('链接已复制！');
+  closeShareModal();
+}
+
+function joinGroupViaLink() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const groupId = urlParams.get('group');
+  
+  if (groupId && groupId !== currentGroup) {
+    const groups = loadData('groups', {});
+    if (groups[groupId]) {
+      selectGroup(groupId);
+      showToast('已加入该空间！');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+}
+
+function updateCommunityGroupList() {
+  const groups = loadData('groups', {});
+  const communityGroupList = document.getElementById('communityGroupList');
+  const photos = loadData('photos', {});
+  
+  let totalCount = 0;
+  Object.values(photos).forEach(groupPhotos => {
+    totalCount += groupPhotos.length;
+  });
+  
+  let html = `
+    <div class="group-item ${currentGroup === 'all' ? 'active' : ''}" onclick="selectCommunityGroup('all')">
+      <div class="group-name">全部动态</div>
+      <div class="group-count">${totalCount}</div>
+    </div>
+    <div class="group-item ${currentGroup === 'default' ? 'active' : ''}" onclick="selectCommunityGroup('default')">
+      <div class="group-name">我的个人空间</div>
+      <div class="group-count">${photos['default'] ? photos['default'].length : 0}</div>
+    </div>
+  `;
+  
+  Object.values(groups).forEach(group => {
+    const count = photos[group.id] ? photos[group.id].length : 0;
+    html += `
+      <div class="group-item ${currentGroup === group.id ? 'active' : ''}" onclick="selectCommunityGroup('${group.id}')">
+        <div class="group-name">${group.name}</div>
+        <div class="group-count">${count}</div>
+      </div>
+    `;
+  });
+  
+  communityGroupList.innerHTML = html;
+}
+
+function selectCommunityGroup(groupId) {
+  currentGroup = groupId;
+  updateCommunityGroupList();
+  updateCommunityFeed();
+}
+
+function updateCommunityFeed() {
+  const photos = loadData('photos', {});
+  const communityFeed = document.getElementById('communityFeed');
+  
+  let allPhotos = [];
+  
+  if (currentGroup === 'all') {
+    Object.values(photos).forEach(groupPhotos => {
+      allPhotos = allPhotos.concat(groupPhotos);
+    });
+  } else {
+    allPhotos = photos[currentGroup] || [];
+  }
+  
+  allPhotos.sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  if (allPhotos.length === 0) {
+    communityFeed.innerHTML = '<div class="no-photos">还没有动态，邀请好友一起打卡吧！</div>';
+    return;
+  }
+  
+  const userAvatars = {
+    'user_1': '👩',
+    'user_2': '👨',
+    'user_3': '👧',
+    'user_4': '👴',
+    'user_5': '👵',
+    'default': '🧑'
+  };
+  
+  const userNames = {
+    'user_1': '小花',
+    'user_2': '小明',
+    'user_3': '小红',
+    'user_4': '老李',
+    'user_5': '张阿姨',
+    'default': '我'
+  };
+  
+  let html = '';
+  allPhotos.forEach(photo => {
+    const userId = photo.userId || 'default';
+    const avatar = userAvatars[userId] || '🧑';
+    const userName = userNames[userId] || '用户';
+    
+    const date = new Date(photo.date);
+    const dateStr = `${date.getMonth() + 1}月${date.getDate()}日`;
+    
+    html += `
+      <div class="feed-item">
+        <div class="feed-header">
+          <div class="feed-avatar">${avatar}</div>
+          <div class="feed-user-info">
+            <div class="feed-username">${userName}</div>
+            <div class="feed-date">${dateStr}</div>
+          </div>
+        </div>
+        <img src="${photo.data}" class="feed-image" alt="${photo.colorName}">
+        <div class="feed-color-tag" style="background: ${photo.color}">${photo.colorName}</div>
+      </div>
+    `;
+  });
+  
+  communityFeed.innerHTML = html;
+}
+
 function init() {
   initTheme();
   initTodayColor();
@@ -456,6 +655,10 @@ function init() {
   updateWeekTrail();
   updateGallery();
   
+  document.getElementById('cameraInput').addEventListener('change', handleCameraUpload);
+  document.getElementById('galleryInput').addEventListener('change', handleGalleryUpload);
+  document.getElementById('inviteBtn').addEventListener('click', openShareModal);
+  
   const groups = loadData('groups', {});
   const photos = loadData('photos', {});
   
@@ -463,6 +666,9 @@ function init() {
     photos['default'] = [];
     saveData('photos', photos);
   }
+  
+  saveData('currentUser', currentUser);
+  joinGroupViaLink();
 }
 
 document.addEventListener('DOMContentLoaded', init);
