@@ -417,6 +417,15 @@ function createGroup(name) {
   updateGroupList();
 }
 
+function generateInviteCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
 function updateGroupList() {
   const groups = loadData('groups', {});
   const groupList = document.getElementById('groupList');
@@ -432,14 +441,104 @@ function updateGroupList() {
   Object.values(groups).forEach(group => {
     const count = photos[group.id] ? photos[group.id].length : 0;
     html += `
-      <div class="group-item ${currentGroup === group.id ? 'active' : ''}" onclick="selectGroup('${group.id}')">
-        <div class="group-name">${group.name}</div>
-        <div class="group-count">${count} 张</div>
+      <div class="group-item ${currentGroup === group.id ? 'active' : ''}">
+        <div class="group-content" onclick="selectGroup('${group.id}')">
+          <div class="group-name">${group.name}</div>
+          <div class="group-count">${count} 张</div>
+        </div>
+        <div class="group-actions">
+          <button class="group-action-btn" onclick="editGroupName('${group.id}')">✏️</button>
+          <button class="group-action-btn" onclick="deleteGroup('${group.id}')">🗑️</button>
+        </div>
       </div>
     `;
   });
   
   groupList.innerHTML = html;
+}
+
+function editGroupName(groupId) {
+  const groups = loadData('groups', {});
+  const group = groups[groupId];
+  
+  if (!group) return;
+  
+  const newName = prompt('请输入新的空间名称:', group.name);
+  if (newName && newName.trim()) {
+    group.name = newName.trim();
+    saveData('groups', groups);
+    updateGroupList();
+    showToast('名称已修改');
+  }
+}
+
+function deleteGroup(groupId) {
+  const groups = loadData('groups', {});
+  const group = groups[groupId];
+  
+  if (!group) return;
+  
+  if (!confirm(`确定要删除「${group.name}」空间吗？所有打卡记录也将被删除。`)) {
+    return;
+  }
+  
+  delete groups[groupId];
+  saveData('groups', groups);
+  
+  const photos = loadData('photos', {});
+  delete photos[groupId];
+  saveData('photos', photos);
+  
+  if (currentGroup === groupId) {
+    currentGroup = 'default';
+  }
+  
+  updateGroupList();
+  updateGallery();
+  updateStats();
+  showToast('空间已删除');
+}
+
+function createGroup(name) {
+  const groups = loadData('groups', {});
+  const groupId = 'group_' + Date.now();
+  
+  groups[groupId] = {
+    id: groupId,
+    name: name,
+    theme: selectedGroupTheme,
+    inviteCode: generateInviteCode(),
+    createdAt: new Date().toISOString()
+  };
+  
+  saveData('groups', groups);
+  showToast('空间创建成功！邀请码: ' + groups[groupId].inviteCode);
+  updateGroupList();
+}
+
+function joinByInviteCode() {
+  const inviteCode = document.getElementById('inviteCodeInput').value.trim().toUpperCase();
+  
+  if (!inviteCode) {
+    showToast('请输入邀请码');
+    return;
+  }
+  
+  const groups = loadData('groups', {});
+  const foundGroup = Object.values(groups).find(group => group.inviteCode === inviteCode);
+  
+  if (foundGroup) {
+    if (foundGroup.id === currentGroup) {
+      showToast('您已经在这个空间里了');
+      return;
+    }
+    
+    selectGroup(foundGroup.id);
+    document.getElementById('inviteCodeInput').value = '';
+    showToast('成功加入「' + foundGroup.name + '」空间！');
+  } else {
+    showToast('邀请码无效');
+  }
 }
 
 function selectGroup(groupId) {
