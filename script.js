@@ -110,26 +110,23 @@ function updateDecorations() {
       const shooting = document.createElement('div');
       shooting.className = 'shooting-star';
       const fromLeft = i % 2 === 0;
-      shooting.style.left = fromLeft ? Math.random() * 20 + '%' : Math.random() * 20 + 80 + '%';
-      shooting.style.top = Math.random() * 40 + '%';
-      shooting.style.animationDelay = (i * 3 + Math.random() * 2) + 's';
+      shooting.style.left = fromLeft ? Math.random() * 15 + '%' : Math.random() * 15 + 85 + '%';
+      shooting.style.top = Math.random() * 50 + '%';
+      shooting.style.animationDelay = (i * 4 + Math.random() * 2) + 's';
       document.body.appendChild(shooting);
     }
   } else {
     const flowers = ['🌸', '🌺', '🌻', '🌼', '🌷', '💐', '🌿', '🍀'];
     const positions = [
-      { left: 0, right: 20 },
-      { left: 80, right: 100 },
-      { left: 0, right: 20 },
-      { left: 80, right: 100 },
-      { left: 0, right: 20 },
-      { left: 80, right: 100 },
-      { left: 0, right: 100, top: 0, bottom: 15 },
-      { left: 0, right: 100, top: 0, bottom: 15 },
-      { left: 0, right: 100, top: 85, bottom: 100 },
-      { left: 0, right: 100, top: 85, bottom: 100 },
-      { left: 0, right: 100, top: 0, bottom: 15 },
-      { left: 0, right: 100, top: 85, bottom: 100 },
+      { left: 0, right: 18, top: 20, bottom: 40 },
+      { left: 82, right: 100, top: 20, bottom: 40 },
+      { left: 0, right: 18, top: 50, bottom: 70 },
+      { left: 82, right: 100, top: 50, bottom: 70 },
+      { left: 0, right: 18, top: 75, bottom: 95 },
+      { left: 82, right: 100, top: 75, bottom: 95 },
+      { left: 25, right: 45, top: 5, bottom: 15 },
+      { left: 55, right: 75, top: 5, bottom: 15 },
+      { left: 35, right: 65, top: 90, bottom: 98 },
     ];
     
     for (let i = 0; i < positions.length; i++) {
@@ -139,15 +136,11 @@ function updateDecorations() {
       
       const pos = positions[i];
       flower.style.left = Math.random() * (pos.right - pos.left) + pos.left + '%';
-      if (pos.top !== undefined) {
-        flower.style.top = Math.random() * (pos.bottom - pos.top) + pos.top + '%';
-      } else {
-        flower.style.top = Math.random() * 100 + '%';
-      }
+      flower.style.top = Math.random() * (pos.bottom - pos.top) + pos.top + '%';
       
       flower.style.animationDelay = Math.random() * 4 + 's';
       flower.style.animationDuration = (Math.random() * 2 + 3) + 's';
-      flower.style.fontSize = (Math.random() * 16 + 12) + 'px';
+      flower.style.fontSize = (Math.random() * 14 + 12) + 'px';
       flower.style.opacity = 0.35;
       document.body.appendChild(flower);
     }
@@ -290,7 +283,7 @@ function updateGallery() {
   const groupPhotos = photos[currentGroup] || [];
   
   if (groupPhotos.length === 0) {
-    galleryGrid.innerHTML = '<div class="no-photos">还没有打卡记录<br>快去上传今天的照片吧！</div>';
+    galleryGrid.innerHTML = '<div class="no-photos">还没有打卡记录，快去上传今天的照片吧！</div>';
     return;
   }
   
