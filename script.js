@@ -89,30 +89,57 @@ function setTheme(theme) {
 }
 
 function updateDecorations() {
-  document.querySelectorAll('.star, .flower').forEach(el => el.remove());
+  document.querySelectorAll('.star, .flower, .shooting-star').forEach(el => el.remove());
   
   if (currentTheme === 'galaxy') {
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 80; i++) {
       const star = document.createElement('div');
       star.className = 'star';
       star.style.left = Math.random() * 100 + '%';
       star.style.top = Math.random() * 100 + '%';
-      star.style.animationDelay = Math.random() * 2 + 's';
-      star.style.width = (Math.random() * 2 + 1) + 'px';
-      star.style.height = star.style.width;
+      star.style.animationDelay = Math.random() * 3 + 's';
+      star.style.animationDuration = (Math.random() * 2 + 1) + 's';
+      const size = Math.random() * 3 + 1;
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.background = size > 2 ? '#ffffff' : 'rgba(255,255,255,0.8)';
       document.body.appendChild(star);
     }
+    
+    for (let i = 0; i < 3; i++) {
+      const shooting = document.createElement('div');
+      shooting.className = 'shooting-star';
+      shooting.style.left = Math.random() * 100 + '%';
+      shooting.style.top = Math.random() * 30 + '%';
+      shooting.style.animationDelay = (i * 4 + Math.random() * 2) + 's';
+      document.body.appendChild(shooting);
+    }
   } else {
-    const flowers = ['🌸', '🌺', '🌻', '🌼', '🌷', '💐'];
-    for (let i = 0; i < 15; i++) {
+    const flowers = ['🌸', '🌺', '🌻', '🌼', '🌷', '💐', '🌿', '🍀'];
+    for (let i = 0; i < 12; i++) {
       const flower = document.createElement('div');
       flower.className = 'flower';
       flower.textContent = flowers[Math.floor(Math.random() * flowers.length)];
-      flower.style.left = Math.random() * 100 + '%';
-      flower.style.top = Math.random() * 100 + '%';
-      flower.style.animationDelay = Math.random() * 3 + 's';
-      flower.style.fontSize = (Math.random() * 20 + 16) + 'px';
-      flower.style.opacity = 0.6;
+      
+      const side = Math.floor(Math.random() * 4);
+      if (side === 0) {
+        flower.style.left = Math.random() * 20 + '%';
+        flower.style.top = Math.random() * 100 + '%';
+      } else if (side === 1) {
+        flower.style.left = Math.random() * 20 + 80 + '%';
+        flower.style.top = Math.random() * 100 + '%';
+      } else if (side === 2) {
+        flower.style.left = Math.random() * 100 + '%';
+        flower.style.top = Math.random() * 15 + '%';
+      } else {
+        flower.style.left = Math.random() * 100 + '%';
+        flower.style.top = Math.random() * 15 + 85 + '%';
+      }
+      
+      flower.style.animationDelay = Math.random() * 4 + 's';
+      flower.style.animationDuration = (Math.random() * 2 + 3) + 's';
+      flower.style.fontSize = (Math.random() * 16 + 12) + 'px';
+      flower.style.opacity = 0.35;
       document.body.appendChild(flower);
     }
   }
