@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>每日色彩 · 花园与星系</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    :root {
+      --bg: #fdfbf6;
+      --card: #ffffff;
+      --text: #333;
+      --sub: #777;
+      --accent: var(--today-color);
+      --radius: 16px;
+      --shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    [theme="galaxy"] {
+      --bg: #0b0b18;
+      --card: #15152b;
+      --text: #f0f0f0;
+      --sub: #a0a0c0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .theme-switch button {
+      padding: 8px 14px;
+      border-radius: 50px;
+      border: none;
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+      margin-left: 6px;
+    }
+
+    .today-color {
+      width: 100%;
+      height: 120px;
+      background: var(--today-color);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    input, button {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    button {
+      background: var(--today-color);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .photo-upload {
+      border: 2px dashed #ccc;
+      padding: 30px;
+      text-align: center;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .group-list {
+      margin-top: 20px;
+    }
+
+    .group-item {
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+
+    .photos {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .photos img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>🌷 每日色彩打卡</h1>
+      <div class="theme-switch">
+        <button onclick="setTheme('garden')">🌷花园</button>
+        <button onclick="setTheme('galaxy')">✨星系</button>
+      </div>
+    </header>
+
+    <div class="today-color" id="todayDisplay">今日色彩：加载中...</div>
+
+    <div class="card">
+      <h3>🏡 我的小组</h3>
+      <input id="groupName" placeholder="输入小组名称">
+      <button onclick="createGroup()">创建小组</button>
+      <div id="groupArea"></div>
+    </div>
+
+    <div class="card hidden" id="checkinArea">
+      <h3>📷 今日打卡</h3>
+      <div class="photo-upload" id="uploadArea">
+        <p>点击上传今日色彩照片</p>
+        <input type="file" id="photoInput" accept="image/*" hidden>
+      </div>
+      <button onclick="uploadCheckin()">确认打卡</button>
+      <div class="photos" id="photoList"></div>
+    </div>
+  </div>
+
+  <script>
+    // 每日自动生成固定颜色（每天只变一次）
+    const today = new Date().toISOString().split('T')[0];
+    const seed = today.split('-').join('');
+    const color = '#' + (parseInt(seed) % 16777215).toString(16).padStart(6, '0');
+    document.documentElement.style.setProperty('--today-color', color);
+    document.getElementById('todayDisplay').innerText = `今日色彩：${color}`;
+
+    // 主题切换
+    function setTheme(t) {
+      document.body.setAttribute('theme', t);
+      localStorage.setItem('theme', t);
+    }
+
+    // 小组系统（本地存储）
+    let currentGroup = null;
+    const groups = JSON.parse(localStorage.getItem('groups')) || {};
+
+    function createGroup() {
+      const name = document.getElementById('groupName').value.trim();
+      if (!name) return;
+      if (!groups[name]) groups[name] = { checkins: [] };
+      localStorage.setItem('groups', JSON.stringify(groups));
+      currentGroup = name;
+      renderGroups();
+      enterGroup();
+    }
+
+    function renderGroups() {
+      const area = document.getElementById('groupArea');
+      area.innerHTML = '';
+      for (let name in groups) {
+        const div = document.createElement('div');
+        div.className = 'group-item';
+        div.innerText = `🏡 ${name}`;
+        div.onclick = () => { currentGroup = name; enterGroup(); };
+        area.appendChild(div);
+      }
+    }
+
+    function enterGroup() {
+      document.getElementById('checkinArea').classList.remove('hidden');
+      renderPhotos();
+    }
+
+    // 上传打卡
+    const upload = document.getElementById('uploadArea');
+    const photoInput = document.getElementById('photoInput');
+    upload.onclick = () => photoInput.click();
+
+    function uploadCheckin() {
+      const file = photoInput.files[0];
+      if (!file || !currentGroup) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        groups[currentGroup].checkins.push({
+          date: today,
+          color: color,
+          url: e.target.result
+        });
+        localStorage.setItem('groups', JSON.stringify(groups));
+        renderPhotos();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderPhotos() {
+      const list = document.getElementById('photoList');
+      list.innerHTML = '';
+      if (!groups[currentGroup]) return;
+      groups[currentGroup].checkins.forEach(p => {
+        const img = document.createElement('img');
+        img.src = p.url;
+        list.appendChild(img);
+      });
+    }
+
+    // 初始化
+    window.onload = () => {
+      setTheme(localStorage.getItem('theme') || 'garden');
+      renderGroups();
+    };
+  </script>
+</body>
+</html>
