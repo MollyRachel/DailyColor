@@ -691,9 +691,21 @@ function init() {
   updateWeekTrail();
   updateGallery();
   
-  document.getElementById('cameraInput').addEventListener('change', handleCameraUpload);
-  document.getElementById('galleryInput').addEventListener('change', handleGalleryUpload);
-  document.getElementById('inviteBtn').addEventListener('click', openShareModal);
+  const cameraInput = document.getElementById('cameraInput');
+  const galleryInput = document.getElementById('galleryInput');
+  const inviteBtn = document.getElementById('inviteBtn');
+  
+  if (cameraInput) {
+    cameraInput.addEventListener('change', handleCameraUpload);
+  }
+  
+  if (galleryInput) {
+    galleryInput.addEventListener('change', handleGalleryUpload);
+  }
+  
+  if (inviteBtn) {
+    inviteBtn.addEventListener('click', openShareModal);
+  }
   
   const groups = loadData('groups', {});
   const photos = loadData('photos', {});
