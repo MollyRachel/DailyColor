@@ -106,34 +106,43 @@ function updateDecorations() {
       document.body.appendChild(star);
     }
     
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       const shooting = document.createElement('div');
       shooting.className = 'shooting-star';
-      shooting.style.left = Math.random() * 100 + '%';
-      shooting.style.top = Math.random() * 30 + '%';
-      shooting.style.animationDelay = (i * 4 + Math.random() * 2) + 's';
+      const fromLeft = i % 2 === 0;
+      shooting.style.left = fromLeft ? Math.random() * 20 + '%' : Math.random() * 20 + 80 + '%';
+      shooting.style.top = Math.random() * 40 + '%';
+      shooting.style.animationDelay = (i * 3 + Math.random() * 2) + 's';
       document.body.appendChild(shooting);
     }
   } else {
     const flowers = ['🌸', '🌺', '🌻', '🌼', '🌷', '💐', '🌿', '🍀'];
-    for (let i = 0; i < 12; i++) {
+    const positions = [
+      { left: 0, right: 20 },
+      { left: 80, right: 100 },
+      { left: 0, right: 20 },
+      { left: 80, right: 100 },
+      { left: 0, right: 20 },
+      { left: 80, right: 100 },
+      { left: 0, right: 100, top: 0, bottom: 15 },
+      { left: 0, right: 100, top: 0, bottom: 15 },
+      { left: 0, right: 100, top: 85, bottom: 100 },
+      { left: 0, right: 100, top: 85, bottom: 100 },
+      { left: 0, right: 100, top: 0, bottom: 15 },
+      { left: 0, right: 100, top: 85, bottom: 100 },
+    ];
+    
+    for (let i = 0; i < positions.length; i++) {
       const flower = document.createElement('div');
       flower.className = 'flower';
       flower.textContent = flowers[Math.floor(Math.random() * flowers.length)];
       
-      const side = Math.floor(Math.random() * 4);
-      if (side === 0) {
-        flower.style.left = Math.random() * 20 + '%';
-        flower.style.top = Math.random() * 100 + '%';
-      } else if (side === 1) {
-        flower.style.left = Math.random() * 20 + 80 + '%';
-        flower.style.top = Math.random() * 100 + '%';
-      } else if (side === 2) {
-        flower.style.left = Math.random() * 100 + '%';
-        flower.style.top = Math.random() * 15 + '%';
+      const pos = positions[i];
+      flower.style.left = Math.random() * (pos.right - pos.left) + pos.left + '%';
+      if (pos.top !== undefined) {
+        flower.style.top = Math.random() * (pos.bottom - pos.top) + pos.top + '%';
       } else {
-        flower.style.left = Math.random() * 100 + '%';
-        flower.style.top = Math.random() * 15 + 85 + '%';
+        flower.style.top = Math.random() * 100 + '%';
       }
       
       flower.style.animationDelay = Math.random() * 4 + 's';
