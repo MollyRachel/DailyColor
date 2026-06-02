@@ -355,11 +355,34 @@
       background: rgba(0, 0, 0, 0.03);
       border-radius: 12px;
       transition: all 0.3s ease;
-      cursor: pointer;
     }
 
     .group-item:hover {
       background: rgba(0, 0, 0, 0.06);
+    }
+
+    .group-content {
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .group-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .group-action-btn {
+      background: transparent;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 8px;
+      transition: background 0.2s ease;
+    }
+
+    .group-action-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
     }
 
     .group-item.active {
@@ -939,6 +962,16 @@
             <div class="group-name">我的个人空间</div>
             <div class="group-count">0 张</div>
           </div>
+        </div>
+      </div>
+
+      <div class="group-card">
+        <div class="group-header">
+          <div class="group-title">加入空间</div>
+        </div>
+        <div style="padding: 0 1rem;">
+          <input type="text" class="modal-input" id="inviteCodeInput" placeholder="输入邀请码">
+          <button class="modal-btn confirm" style="width: 100%; margin-top: 1rem;" onclick="joinByInviteCode()">加入星系</button>
         </div>
       </div>
     </div>
