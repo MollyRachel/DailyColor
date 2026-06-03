@@ -1261,6 +1261,27 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="avatarModal">
+    <div class="modal-content">
+      <div class="modal-title">选择头像来源</div>
+      <div class="camera-options">
+        <div class="camera-option" onclick="takeAvatarPhoto('camera')">
+          <div class="camera-option-icon">📸</div>
+          <div class="camera-option-label">拍照</div>
+        </div>
+        <div class="camera-option" onclick="takeAvatarPhoto('gallery')">
+          <div class="camera-option-icon">🖼️</div>
+          <div class="camera-option-label">从相册选择</div>
+        </div>
+        <div class="camera-option" onclick="takeAvatarPhoto('file')">
+          <div class="camera-option-icon">📁</div>
+          <div class="camera-option-label">从文件选择</div>
+        </div>
+      </div>
+      <button class="modal-btn cancel" style="width: 100%; margin-top: 1rem;" onclick="closeAvatarModal()">取消</button>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <div class="tab-bar">
@@ -1283,16 +1304,21 @@
       <div class="camera-options">
         <div class="camera-option" onclick="takePhoto('camera')">
           <div class="camera-option-icon">📸</div>
-          <div class="camera-option-label">拍摄</div>
+          <div class="camera-option-label">拍照</div>
         </div>
         <div class="camera-option" onclick="takePhoto('gallery')">
           <div class="camera-option-icon">🖼️</div>
           <div class="camera-option-label">从相册选择</div>
         </div>
+        <div class="camera-option" onclick="takePhoto('file')">
+          <div class="camera-option-icon">📁</div>
+          <div class="camera-option-label">从文件选择</div>
+        </div>
       </div>
       <button class="modal-btn cancel" style="width: 100%; margin-top: 1rem;" onclick="closeCameraModal()">取消</button>
       <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
       <input type="file" id="galleryInput" accept="image/*" style="display: none;">
+      <input type="file" id="fileInput" accept="image/*" style="display: none;">
     </div>
   </div>
 
@@ -1432,7 +1458,9 @@
             <div class="profile-avatar-new" id="profileAvatar" onclick="changeAvatar()" ontouchstart="">
               <span id="avatarIcon">🐰</span>
             </div>
-            <input type="file" id="avatarInput" accept="image/*" capture="user" style="display: none;">
+            <input type="file" id="avatarInput" accept="image/*" capture="environment" style="display: none;">
+            <input type="file" id="avatarGalleryInput" accept="image/*" style="display: none;">
+            <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
             <div class="profile-details">
               <div class="profile-name-new" id="profileName">我的名字</div>
               <div class="profile-colorid-new" id="profileColorId">ColorID: ABC123</div>
