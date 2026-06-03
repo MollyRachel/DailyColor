@@ -851,7 +851,7 @@ function initProfile() {
   }
   
   if (!userData.avatar) {
-    userData.avatar = '🧑';
+    userData.avatar = '🐰';
     saveData('currentUser', userData);
   }
   
@@ -874,7 +874,7 @@ function initProfile() {
     avatarIcon.textContent = '';
   } else {
     avatar.style.backgroundImage = '';
-    avatarIcon.textContent = userData.avatar || '🧑';
+    avatarIcon.textContent = userData.avatar || '🐰';
   }
   
   document.getElementById('profileBio').addEventListener('click', editBio);
@@ -886,34 +886,60 @@ function initProfile() {
 
 function changeAvatar() {
   const input = document.getElementById('avatarInput');
-  input.click();
+  if (input) {
+    input.click();
+  }
 }
 
-function handleAvatarUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+function handleAvatarUpload(event) {
+  const input = event.target;
+  const file = input.files ? input.files[0] : null;
+  
+  if (!file) {
+    showToast('请选择图片');
+    return;
+  }
+  
+  if (!file.type.startsWith('image/')) {
+    showToast('请选择图片文件');
+    return;
+  }
   
   const reader = new FileReader();
-  reader.onload = function(event) {
-    let userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我', avatar: '' });
-    userData.avatar = event.target.result;
-    saveData('currentUser', userData);
-    
-    const avatar = document.getElementById('profileAvatar');
-    const avatarIcon = document.getElementById('avatarIcon');
-    
-    avatar.style.backgroundImage = 'url(' + userData.avatar + ')';
-    avatar.style.backgroundSize = 'cover';
-    avatar.style.backgroundPosition = 'center';
-    avatarIcon.textContent = '';
-    
-    showToast('头像更新成功！');
+  
+  reader.onload = function(e) {
+    try {
+      let userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我', avatar: '🐰' });
+      userData.avatar = e.target.result;
+      saveData('currentUser', userData);
+      
+      const avatar = document.getElementById('profileAvatar');
+      const avatarIcon = document.getElementById('avatarIcon');
+      
+      if (avatar && avatarIcon) {
+        avatar.style.backgroundImage = 'url(' + e.target.result + ')';
+        avatar.style.backgroundSize = 'cover';
+        avatar.style.backgroundPosition = 'center';
+        avatarIcon.textContent = '';
+      }
+      
+      showToast('头像更新成功！');
+    } catch (error) {
+      showToast('保存失败，请重试');
+      console.error('保存头像失败:', error);
+    }
   };
+  
   reader.onerror = function() {
     showToast('图片读取失败，请重试');
   };
+  
+  reader.onabort = function() {
+    showToast('操作已取消');
+  };
+  
   reader.readAsDataURL(file);
-  e.target.value = '';
+  input.value = '';
 }
 
 function editProfile() {
