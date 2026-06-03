@@ -37,7 +37,7 @@ let currentTheme = 'garden';
 let currentGroup = 'default';
 let todayColor = null;
 let selectedGroupTheme = 'garden';
-let currentUser = loadData('currentUser', { id: 'user_' + Date.now(), name: '我' });
+let currentUser = loadData('currentUser', { id: 'user_' + Date.now(), name: '我', avatar: '🐰' });
 
 function getTodayColor() {
   const today = new Date();
@@ -236,13 +236,7 @@ function handleFile(file) {
   const reader = new FileReader();
   
   reader.onload = function(e) {
-    try {
-      savePhoto(e.target.result);
-      showToast('打卡成功！');
-    } catch (error) {
-      showToast('保存失败，请重试');
-      console.error('保存照片失败:', error);
-    }
+    savePhoto(e.target.result);
   };
   
   reader.onerror = function() {
@@ -274,11 +268,21 @@ function savePhoto(base64) {
   };
   
   photos[currentGroup].unshift(photo);
-  saveData('photos', photos);
   
-  updateStats();
-  updateWeekTrail();
-  updateGallery();
+  try {
+    saveData('photos', photos);
+    updateStats();
+    updateWeekTrail();
+    updateGallery();
+    showToast('打卡成功！');
+  } catch (error) {
+    console.error('保存失败:', error);
+    if (error.name === 'QuotaExceededError') {
+      showToast('存储空间不足，请清理部分照片');
+    } else {
+      showToast('保存失败，请重试');
+    }
+  }
 }
 
 function updateStats() {
@@ -558,7 +562,7 @@ function joinByInviteCode() {
     document.getElementById('inviteCodeInput').value = '';
     showToast('成功加入「' + foundGroup.name + '」空间！');
   } else {
-    const userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我' });
+    const userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我', avatar: '🐰' });
     if (userData.inviteCode && userData.inviteCode.toUpperCase() === inviteCode) {
       if (currentGroup === 'default') {
         showToast('您已经在个人空间里了');
@@ -733,7 +737,7 @@ function openShareModal() {
   let groupName = '';
   
   if (currentGroup === 'default') {
-    let userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我' });
+    let userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我', avatar: '🐰' });
     if (!userData.inviteCode) {
       userData.inviteCode = generateInviteCode();
       saveData('currentUser', userData);
@@ -787,7 +791,7 @@ function joinGroupViaLink() {
       showToast('成功加入「' + foundGroup.name + '」空间！');
       window.history.replaceState({}, document.title, window.location.pathname);
     } else {
-      const userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我' });
+      const userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我', avatar: '🐰' });
       if (userData.inviteCode && userData.inviteCode.toUpperCase() === inviteCode.toUpperCase()) {
         if (currentGroup === 'default') {
           showToast('您已经在个人空间里了');
@@ -897,7 +901,7 @@ function selectCommunityGroup(groupId) {
 }
 
 function initProfile() {
-  let userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我' });
+  let userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我', avatar: '🐰' });
   
   if (!userData.colorId) {
     userData.colorId = 'CLR-' + Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -1034,7 +1038,7 @@ function editProfile() {
 function editBio() {
   const newBio = prompt('请输入个人简介:', document.getElementById('profileBio').textContent);
   if (newBio !== null) {
-    let userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我' });
+    let userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我', avatar: '🐰' });
     userData.bio = newBio.trim() || '点击编辑个人简介...';
     saveData('currentUser', userData);
     document.getElementById('profileBio').textContent = userData.bio;
