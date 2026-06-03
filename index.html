@@ -856,95 +856,38 @@
 
     .community-hero {
       position: relative;
-      height: 180px;
-      overflow: hidden;
-      background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
-      border-radius: 0 0 30px 30px;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
+      padding: 2rem 1rem;
+      text-align: center;
     }
 
     .hero-content {
-      position: relative;
-      z-index: 2;
-      height: 100%;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
     }
 
     .hero-quote {
       text-align: center;
-      color: white;
-      padding: 2rem;
+      color: var(--text-color);
     }
 
     .hero-quote p {
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-weight: 500;
-      margin-bottom: 0.5rem;
-      letter-spacing: 2px;
+      margin-bottom: 0.3rem;
     }
 
     .quote-symbol {
-      font-size: 2rem;
-      opacity: 0.6;
+      display: none;
     }
 
     .quote-author {
-      font-size: 0.8rem;
-      opacity: 0.8;
-      font-style: italic;
-    }
-
-    .hero-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, rgba(255, 107, 157, 0.7) 0%, rgba(192, 132, 252, 0.7) 100%);
-      z-index: 1;
-    }
-
-    .hero-decoration {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      z-index: 1;
-    }
-
-    .hero-settings {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      z-index: 3;
-    }
-
-    .hero-settings-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-    }
-
-    .hero-settings-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: scale(1.1);
+      font-size: 0.85rem;
+      color: var(--subtext-color);
     }
 
     .profile-section {
-      margin-top: -60px;
       position: relative;
       z-index: 3;
     }
@@ -952,44 +895,24 @@
     .profile-card-new {
       background: var(--card-bg);
       border-radius: 24px;
-      padding: 0;
-      overflow: hidden;
+      padding: 1.5rem;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-
-    .profile-bg {
-      height: 100px;
-      background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
-      position: relative;
-    }
-
-    .profile-bg::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120px;
-      height: 20px;
-      background: var(--card-bg);
-      border-radius: 50%;
     }
 
     .profile-inner {
       display: flex;
       align-items: center;
-      padding: 0 1.5rem 1rem;
-      margin-top: -50px;
-      position: relative;
+      gap: 1rem;
+      margin-bottom: 1rem;
     }
 
     .profile-avatar-new {
       width: 90px;
       height: 90px;
       border-radius: 50%;
-      background: white;
-      border: 4px solid white;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      box-shadow: var(--shadow);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1465,24 +1388,16 @@
 
   <div class="page" id="communityPage" style="display: none;">
     <div class="community-hero" id="communityHero">
-      <div class="hero-settings">
-        <button class="hero-settings-btn" id="heroSettingsBtn" onclick="openBackgroundModal()">⚙️</button>
-      </div>
-      <div class="hero-overlay"></div>
-      <div class="hero-content">
-        <div class="hero-quote">
-          <span class="quote-symbol">"</span>
-          <p>记录生活的每一天</p>
-          <span class="quote-author">— Daily Color</span>
+        <div class="hero-content">
+          <div class="hero-quote">
+            <p>记录生活的每一天——Daily Color</p>
+          </div>
         </div>
       </div>
-      <div class="hero-decoration"></div>
-    </div>
 
     <div class="container">
       <div class="profile-section">
         <div class="profile-card-new">
-          <div class="profile-bg"></div>
           <div class="profile-inner">
             <div class="profile-avatar-new" id="profileAvatar" onclick="changeAvatar()">
               🧑
