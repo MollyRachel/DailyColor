@@ -1,3 +1,73 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyB8H2J9z4Y6k8w7H4Z7cW5Y8V5c6b7N6x4",
+  authDomain: "daily-color-3a7b5.firebaseapp.com",
+  projectId: "daily-color-3a7b5",
+  storageBucket: "daily-color-3a7b5.appspot.com",
+  messagingSenderId: "9876543210",
+  appId: "1:9876543210:web:abcdef1234567890"
+};
+
+let db;
+let currentUserId = null;
+
+function initFirebase() {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  db = firebase.firestore();
+  
+  firebase.auth().signInAnonymously().then((userCredential) => {
+    currentUserId = userCredential.user.uid;
+    console.log('匿名登录成功:', currentUserId);
+  }).catch((error) => {
+    console.error('登录失败:', error);
+  });
+}
+
+async function uploadPhotoToCloud(photo) {
+  if (!db || !currentUserId) return;
+  
+  try {
+    await db.collection('photos').add({
+      userId: currentUserId,
+      color: photo.color,
+      colorName: photo.colorName,
+      data: photo.data,
+      date: photo.date,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    console.log('照片已上传到云端');
+  } catch (error) {
+    console.error('上传失败:', error);
+  }
+}
+
+async function loadGlobalFeed() {
+  if (!db) return [];
+  
+  try {
+    const snapshot = await db.collection('photos')
+      .orderBy('createdAt', 'desc')
+      .limit(50)
+      .get();
+    
+    const photos = [];
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      photos.push({
+        id: doc.id,
+        ...data,
+        date: data.date || new Date().toISOString()
+      });
+    });
+    
+    return photos;
+  } catch (error) {
+    console.error('加载失败:', error);
+    return [];
+  }
+}
+
 const COLOR_NAMES = [
   { hex: '#FF6B6B', name: '珊瑚红', englishName: 'Coral Red' },
   { hex: '#4ECDC4', name: '薄荷绿', englishName: 'Mint Green' },
@@ -254,6 +324,8 @@ function savePhoto(base64) {
   
   photos[currentGroup].unshift(photo);
   saveData('photos', photos);
+  
+  uploadPhotoToCloud(photo);
   
   showToast('打卡成功！');
   updateStats();
@@ -927,17 +999,23 @@ function editBio() {
   }
 }
 
-function updateCommunityFeed() {
-  const photos = loadData('photos', {});
+async function updateCommunityFeed() {
   const communityFeed = document.getElementById('communityFeed');
+  communityFeed.innerHTML = `
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>加载中...</p>
+    </div>
+  `;
   
   let allPhotos = [];
   
   if (currentGroup === 'all') {
-    Object.values(photos).forEach(groupPhotos => {
-      allPhotos = allPhotos.concat(groupPhotos);
-    });
+    const cloudPhotos = await loadGlobalFeed();
+    const localPhotos = getLocalPhotos();
+    allPhotos = [...cloudPhotos, ...localPhotos];
   } else {
+    const photos = loadData('photos', {});
     allPhotos = photos[currentGroup] || [];
   }
   
@@ -947,8 +1025,8 @@ function updateCommunityFeed() {
     communityFeed.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">📷</div>
-        <p>还没有动态</p>
-        <p class="empty-hint">邀请好友一起打卡吧</p>
+        <p>今天还没有人发布</p>
+        <p class="empty-hint">现在就去发第一条吧</p>
       </div>
     `;
     return;
@@ -967,7 +1045,17 @@ function updateCommunityFeed() {
   communityFeed.innerHTML = html;
 }
 
+function getLocalPhotos() {
+  const photos = loadData('photos', {});
+  let allPhotos = [];
+  Object.values(photos).forEach(groupPhotos => {
+    allPhotos = allPhotos.concat(groupPhotos);
+  });
+  return allPhotos;
+}
+
 function init() {
+  initFirebase();
   initTheme();
   initTodayColor();
   initUpload();
