@@ -223,15 +223,36 @@ function handlePhotoUpload(e) {
 }
 
 function handleFile(file) {
+  if (!file || !file.type) {
+    showToast('请选择图片');
+    return;
+  }
+  
   if (!file.type.startsWith('image/')) {
     showToast('请选择图片文件');
     return;
   }
   
   const reader = new FileReader();
-  reader.onload = (e) => {
-    savePhoto(e.target.result);
+  
+  reader.onload = function(e) {
+    try {
+      savePhoto(e.target.result);
+      showToast('打卡成功！');
+    } catch (error) {
+      showToast('保存失败，请重试');
+      console.error('保存照片失败:', error);
+    }
   };
+  
+  reader.onerror = function() {
+    showToast('图片读取失败');
+  };
+  
+  reader.onabort = function() {
+    showToast('操作已取消');
+  };
+  
   reader.readAsDataURL(file);
 }
 
@@ -255,7 +276,6 @@ function savePhoto(base64) {
   photos[currentGroup].unshift(photo);
   saveData('photos', photos);
   
-  showToast('打卡成功！');
   updateStats();
   updateWeekTrail();
   updateGallery();
@@ -588,10 +608,21 @@ function closeCameraModal() {
 function takePhoto(source) {
   closeCameraModal();
   
-  if (source === 'camera') {
-    document.getElementById('cameraInput').click();
-  } else {
-    document.getElementById('galleryInput').click();
+  let input;
+  switch(source) {
+    case 'camera':
+      input = document.getElementById('cameraInput');
+      break;
+    case 'gallery':
+      input = document.getElementById('galleryInput');
+      break;
+    case 'file':
+      input = document.getElementById('fileInput');
+      break;
+  }
+  
+  if (input) {
+    input.click();
   }
 }
 
@@ -879,13 +910,37 @@ function initProfile() {
   
   document.getElementById('profileBio').addEventListener('click', editBio);
   document.getElementById('avatarInput').addEventListener('change', handleAvatarUpload);
+  document.getElementById('avatarGalleryInput').addEventListener('change', handleAvatarUpload);
+  document.getElementById('avatarFileInput').addEventListener('change', handleAvatarUpload);
   
   document.getElementById('backgroundInput').addEventListener('change', handleBackgroundUpload);
   loadBackground();
 }
 
 function changeAvatar() {
-  const input = document.getElementById('avatarInput');
+  document.getElementById('avatarModal').classList.add('show');
+}
+
+function closeAvatarModal() {
+  document.getElementById('avatarModal').classList.remove('show');
+}
+
+function takeAvatarPhoto(source) {
+  closeAvatarModal();
+  
+  let input;
+  switch(source) {
+    case 'camera':
+      input = document.getElementById('avatarInput');
+      break;
+    case 'gallery':
+      input = document.getElementById('avatarGalleryInput');
+      break;
+    case 'file':
+      input = document.getElementById('avatarFileInput');
+      break;
+  }
+  
   if (input) {
     input.click();
   }
@@ -1017,6 +1072,7 @@ function init() {
   
   const cameraInput = document.getElementById('cameraInput');
   const galleryInput = document.getElementById('galleryInput');
+  const fileInput = document.getElementById('fileInput');
   const inviteBtn = document.getElementById('inviteBtn');
   
   if (cameraInput) {
@@ -1025,6 +1081,10 @@ function init() {
   
   if (galleryInput) {
     galleryInput.addEventListener('change', handleGalleryUpload);
+  }
+  
+  if (fileInput) {
+    fileInput.addEventListener('change', handleGalleryUpload);
   }
   
   if (inviteBtn) {
