@@ -598,7 +598,14 @@ function switchTab(tab) {
 }
 
 function openCameraModal() {
-  document.getElementById('cameraModal').classList.add('show');
+  const modal = document.getElementById('cameraModal');
+  if (modal) {
+    modal.classList.add('show');
+    console.log('Camera modal opened');
+  } else {
+    console.error('Camera modal not found');
+    showToast('相机功能暂不可用');
+  }
 }
 
 function closeCameraModal() {
@@ -627,10 +634,18 @@ function takePhoto(source) {
 }
 
 function handleCameraUpload(e) {
-  const file = e.target.files[0];
-  if (file) {
-    handleFile(file);
+  const input = e.target;
+  const file = input.files ? input.files[0] : null;
+  
+  console.log('Camera upload triggered, file:', file);
+  
+  if (!file) {
+    showToast('请选择图片');
+    return;
   }
+  
+  handleFile(file);
+  input.value = '';
 }
 
 function openBackgroundModal() {
@@ -697,10 +712,18 @@ function loadBackground() {
 }
 
 function handleGalleryUpload(e) {
-  const file = e.target.files[0];
-  if (file) {
-    handleFile(file);
+  const input = e.target;
+  const file = input.files ? input.files[0] : null;
+  
+  console.log('Gallery upload triggered, file:', file);
+  
+  if (!file) {
+    showToast('请选择图片');
+    return;
   }
+  
+  handleFile(file);
+  input.value = '';
 }
 
 function openShareModal() {
