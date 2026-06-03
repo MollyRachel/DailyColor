@@ -864,14 +864,17 @@ function initProfile() {
   document.getElementById('profileColorId').textContent = 'ColorID: ' + userData.colorId;
   document.getElementById('profileBio').textContent = userData.bio;
   
-  if (userData.avatar.startsWith('data:')) {
-    document.getElementById('profileAvatar').style.backgroundImage = 'url(' + userData.avatar + ')';
-    document.getElementById('profileAvatar').style.backgroundSize = 'cover';
-    document.getElementById('profileAvatar').style.backgroundPosition = 'center';
-    document.getElementById('profileAvatar').textContent = '';
+  const avatar = document.getElementById('profileAvatar');
+  const avatarIcon = document.getElementById('avatarIcon');
+  
+  if (userData.avatar && userData.avatar.startsWith('data:')) {
+    avatar.style.backgroundImage = 'url(' + userData.avatar + ')';
+    avatar.style.backgroundSize = 'cover';
+    avatar.style.backgroundPosition = 'center';
+    avatarIcon.textContent = '';
   } else {
-    document.getElementById('profileAvatar').textContent = userData.avatar;
-    document.getElementById('profileAvatar').style.backgroundImage = '';
+    avatar.style.backgroundImage = '';
+    avatarIcon.textContent = userData.avatar || '🧑';
   }
   
   document.getElementById('profileBio').addEventListener('click', editBio);
@@ -882,27 +885,35 @@ function initProfile() {
 }
 
 function changeAvatar() {
-  document.getElementById('avatarInput').click();
+  const input = document.getElementById('avatarInput');
+  input.click();
 }
 
 function handleAvatarUpload(e) {
   const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      let userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我' });
-      userData.avatar = event.target.result;
-      saveData('currentUser', userData);
-      
-      document.getElementById('profileAvatar').style.backgroundImage = 'url(' + userData.avatar + ')';
-      document.getElementById('profileAvatar').style.backgroundSize = 'cover';
-      document.getElementById('profileAvatar').style.backgroundPosition = 'center';
-      document.getElementById('profileAvatar').textContent = '';
-      
-      showToast('头像更新成功！');
-    };
-    reader.readAsDataURL(file);
-  }
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    let userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我', avatar: '' });
+    userData.avatar = event.target.result;
+    saveData('currentUser', userData);
+    
+    const avatar = document.getElementById('profileAvatar');
+    const avatarIcon = document.getElementById('avatarIcon');
+    
+    avatar.style.backgroundImage = 'url(' + userData.avatar + ')';
+    avatar.style.backgroundSize = 'cover';
+    avatar.style.backgroundPosition = 'center';
+    avatarIcon.textContent = '';
+    
+    showToast('头像更新成功！');
+  };
+  reader.onerror = function() {
+    showToast('图片读取失败，请重试');
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
 }
 
 function editProfile() {
@@ -947,8 +958,8 @@ function updateCommunityFeed() {
     communityFeed.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">📷</div>
-        <p>还没有动态</p>
-        <p class="empty-hint">邀请好友一起打卡吧</p>
+        <p>今天还没有人发布</p>
+        <p class="empty-hint">现在就去发第一条吧</p>
       </div>
     `;
     return;
