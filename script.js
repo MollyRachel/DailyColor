@@ -602,6 +602,69 @@ function handleCameraUpload(e) {
   }
 }
 
+function openBackgroundModal() {
+  document.getElementById('backgroundModal').classList.add('show');
+}
+
+function closeBackgroundModal() {
+  document.getElementById('backgroundModal').classList.remove('show');
+}
+
+function setBackground(type) {
+  const hero = document.getElementById('communityHero');
+  let bgStyle = '';
+  
+  switch(type) {
+    case 'gradient':
+      bgStyle = 'linear-gradient(135deg, #FF6B9D, #C084FC)';
+      break;
+    case 'nature':
+      bgStyle = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+      break;
+    case 'abstract':
+      bgStyle = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+      break;
+    case 'minimal':
+      bgStyle = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+      break;
+    default:
+      bgStyle = 'linear-gradient(135deg, #FF6B9D, #C084FC)';
+  }
+  
+  hero.style.backgroundImage = bgStyle;
+  saveData('communityBackground', { type: type, data: null });
+  closeBackgroundModal();
+  showToast('背景已更新！');
+}
+
+function handleBackgroundUpload(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const hero = document.getElementById('communityHero');
+      hero.style.backgroundImage = `url(${event.target.result})`;
+      saveData('communityBackground', { type: 'custom', data: event.target.result });
+      closeBackgroundModal();
+      showToast('背景图片已更新！');
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function loadBackground() {
+  const hero = document.getElementById('communityHero');
+  const saved = loadData('communityBackground', null);
+  
+  if (saved) {
+    if (saved.type === 'custom' && saved.data) {
+      hero.style.backgroundImage = `url(${saved.data})`;
+    } else if (saved.type) {
+      setBackground(saved.type);
+    }
+  }
+}
+
 function handleGalleryUpload(e) {
   const file = e.target.files[0];
   if (file) {
@@ -813,6 +876,9 @@ function initProfile() {
   
   document.getElementById('profileBio').addEventListener('click', editBio);
   document.getElementById('avatarInput').addEventListener('change', handleAvatarUpload);
+  
+  document.getElementById('backgroundInput').addEventListener('change', handleBackgroundUpload);
+  loadBackground();
 }
 
 function changeAvatar() {
