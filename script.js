@@ -767,7 +767,15 @@ function updateCommunityGroupList() {
 
 function selectCommunityGroup(groupId) {
   currentGroup = groupId;
-  updateCommunityGroupList();
+  
+  document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+  
+  if (groupId === 'all') {
+    document.querySelector('.filter-tab:first-child').classList.add('active');
+  } else if (groupId === 'default') {
+    document.querySelector('.filter-tab:nth-child(2)').classList.add('active');
+  }
+  
   updateCommunityFeed();
 }
 
@@ -870,48 +878,22 @@ function updateCommunityFeed() {
   allPhotos.sort((a, b) => new Date(b.date) - new Date(a.date));
   
   if (allPhotos.length === 0) {
-    communityFeed.innerHTML = '<div class="no-photos">还没有动态，邀请好友一起打卡吧！</div>';
+    communityFeed.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📷</div>
+        <p>还没有动态</p>
+        <p class="empty-hint">邀请好友一起打卡吧</p>
+      </div>
+    `;
     return;
   }
   
-  const userAvatars = {
-    'user_1': '👩',
-    'user_2': '👨',
-    'user_3': '👧',
-    'user_4': '👴',
-    'user_5': '👵',
-    'default': '🧑'
-  };
-  
-  const userNames = {
-    'user_1': '小花',
-    'user_2': '小明',
-    'user_3': '小红',
-    'user_4': '老李',
-    'user_5': '张阿姨',
-    'default': '我'
-  };
-  
   let html = '';
   allPhotos.forEach(photo => {
-    const userId = photo.userId || 'default';
-    const avatar = userAvatars[userId] || '🧑';
-    const userName = userNames[userId] || '用户';
-    
-    const date = new Date(photo.date);
-    const dateStr = `${date.getMonth() + 1}月${date.getDate()}日`;
-    
     html += `
-      <div class="feed-item">
-        <div class="feed-header">
-          <div class="feed-avatar">${avatar}</div>
-          <div class="feed-user-info">
-            <div class="feed-username">${userName}</div>
-            <div class="feed-date">${dateStr}</div>
-          </div>
-        </div>
-        <img src="${photo.data}" class="feed-image" alt="${photo.colorName}">
-        <div class="feed-color-tag" style="background: ${photo.color}">${photo.colorName}</div>
+      <div class="feed-item" onclick="previewPhoto(${photo.id})">
+        <img src="${photo.data}" alt="${photo.colorName}">
+        <span class="color-tag" style="background: ${photo.color}">${photo.colorName}</span>
       </div>
     `;
   });
