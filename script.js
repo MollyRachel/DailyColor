@@ -613,6 +613,7 @@ function openShareModal() {
   const groups = loadData('groups', {});
   let activeGroup = Object.values(groups).find(g => g.id === currentGroup);
   let inviteCode = '';
+  let groupName = '';
   
   if (currentGroup === 'default') {
     let userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我' });
@@ -621,15 +622,17 @@ function openShareModal() {
       saveData('currentUser', userData);
     }
     inviteCode = userData.inviteCode;
+    groupName = '我的个人空间';
   } else if (activeGroup && activeGroup.inviteCode) {
     inviteCode = activeGroup.inviteCode;
+    groupName = activeGroup.name;
   }
   
   let baseUrl = 'https://mollyrachel.github.io/DailyColor';
   
   let shareUrl = baseUrl;
   if (inviteCode) {
-    shareUrl += '?inviteCode=' + inviteCode;
+    shareUrl += '?inviteCode=' + inviteCode + '&groupName=' + encodeURIComponent(groupName);
   }
   
   document.getElementById('shareLink').value = shareUrl;
@@ -676,6 +679,16 @@ function joinGroupViaLink() {
           showToast('成功加入个人空间！');
         }
         window.history.replaceState({}, document.title, window.location.pathname);
+      } else {
+        const groupName = urlParams.get('groupName');
+        if (groupName) {
+          document.getElementById('joinGroupModalTitle').textContent = '是否加入「' + decodeURIComponent(groupName) + '」空间？';
+          document.getElementById('joinGroupModal').classList.add('show');
+          
+          window.pendingGroupId = 'group_' + Date.now();
+          window.pendingGroupName = groupName;
+          window.pendingInviteCode = inviteCode;
+        }
       }
     }
   }
@@ -688,6 +701,7 @@ function acceptJoinGroup() {
       id: window.pendingGroupId,
       name: decodeURIComponent(window.pendingGroupName),
       theme: 'garden',
+      inviteCode: window.pendingInviteCode,
       createdAt: new Date().toISOString()
     };
     saveData('groups', groups);
@@ -699,6 +713,7 @@ function acceptJoinGroup() {
     
     window.pendingGroupId = null;
     window.pendingGroupName = null;
+    window.pendingInviteCode = null;
   }
 }
 
