@@ -233,14 +233,51 @@ function handleFile(file) {
     return;
   }
   
+  showToast('正在处理图片...');
+  
+  const img = new Image();
   const reader = new FileReader();
   
   reader.onload = function(e) {
-    savePhoto(e.target.result);
+    img.src = e.target.result;
   };
   
-  reader.onerror = function() {
-    showToast('图片读取失败');
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const maxSize = 800;
+    let width = img.width;
+    let height = img.height;
+    
+    if (width > height) {
+      if (width > maxSize) {
+        height = (height * maxSize) / width;
+        width = maxSize;
+      }
+    } else {
+      if (height > maxSize) {
+        width = (width * maxSize) / height;
+        height = maxSize;
+      }
+    }
+    
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(img, 0, 0, width, height);
+    
+    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+    console.log('压缩后大小:', compressedBase64.length);
+    savePhoto(compressedBase64);
+  };
+  
+  img.onerror = function() {
+    showToast('图片加载失败，请重试');
+  };
+  
+  reader.onerror = function(err) {
+    console.error('图片读取失败:', err);
+    showToast('图片读取失败，请重试');
   };
   
   reader.onabort = function() {
@@ -251,6 +288,10 @@ function handleFile(file) {
 }
 
 function savePhoto(base64) {
+  if (!todayColor) {
+    todayColor = getTodayColor();
+  }
+  
   const today = new Date().toISOString().split('T')[0];
   const photos = loadData('photos', {});
   
