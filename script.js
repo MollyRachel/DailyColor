@@ -538,7 +538,16 @@ function joinByInviteCode() {
     document.getElementById('inviteCodeInput').value = '';
     showToast('成功加入「' + foundGroup.name + '」空间！');
   } else {
-    if (inviteCode.startsWith('CLR-')) {
+    const userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我' });
+    if (userData.inviteCode && userData.inviteCode.toUpperCase() === inviteCode) {
+      if (currentGroup === 'default') {
+        showToast('您已经在个人空间里了');
+      } else {
+        selectGroup('default');
+        document.getElementById('inviteCodeInput').value = '';
+        showToast('成功加入个人空间！');
+      }
+    } else if (inviteCode.startsWith('CLR-')) {
       showToast('ColorID仅用于标识个人身份，不能用于加入空间');
     } else {
       showToast('邀请码无效');
@@ -657,6 +666,17 @@ function joinGroupViaLink() {
       selectGroup(foundGroup.id);
       showToast('成功加入「' + foundGroup.name + '」空间！');
       window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      const userData = loadData('currentUser', { id: 'user_' + Date.now(), name: '我' });
+      if (userData.inviteCode && userData.inviteCode.toUpperCase() === inviteCode.toUpperCase()) {
+        if (currentGroup === 'default') {
+          showToast('您已经在个人空间里了');
+        } else {
+          selectGroup('default');
+          showToast('成功加入个人空间！');
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
   }
 }
